@@ -1,9 +1,3 @@
-"""
-Automated Audit Analysis System for Government Projects
-Executive Engineer, PWD, Nilanga, District Latur
-DDO Code: 3705003421
-"""
-
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -12,16 +6,8 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 import re
 
-# ============================================================================
-# STEP 1 & 2: DATA EXTRACTION AND COLLECTION
-# ============================================================================
-
 class DataExtractor:
-    """Extract data from various government documents"""
-    
-    @staticmethod
-    def extract_utilisation_certificates():
-        """Extract data from Utilisation Certificate PDFs"""
+    def extract_utilisation_certificates()
         uc_data = [
             {
                 'work_id': '2103/L37/01212',
@@ -136,9 +122,7 @@ class DataExtractor:
         ]
         return pd.DataFrame(uc_data)
     
-    @staticmethod
     def extract_capital_works():
-        """Extract data from Capital Works Reports"""
         capital_data = [
             {
                 'work_id': 'JUL/21/021/00190',
@@ -221,9 +205,7 @@ class DataExtractor:
         ]
         return pd.DataFrame(capital_data)
     
-    @staticmethod
     def extract_tender_data():
-        """Extract data from Agreement Register/Tender documents"""
         tender_data = [
             {
                 'agreement_no': 'B1/66',
@@ -273,30 +255,17 @@ class DataExtractor:
         ]
         return pd.DataFrame(tender_data)
 
-
-# ============================================================================
-# STEP 3: DATA CLEANING & NORMALIZATION
-# ============================================================================
-
 class DataCleaner:
-    """Clean and normalize extracted data"""
-    
-    @staticmethod
     def clean_amount(amount):
-        """Remove Rs., commas and convert to float"""
         if isinstance(amount, str):
             amount = re.sub(r'[Rs.,\s]', '', amount)
             return float(amount) if amount else 0
         return float(amount) if amount else 0
     
-    @staticmethod
     def normalize_work_id(work_id):
-        """Standardize Work ID format"""
         return str(work_id).strip().upper()
     
-    @staticmethod
     def clean_dataframe(df):
-        """Clean entire dataframe"""
         # Convert amounts
         amount_cols = ['aa_amount', 'expenditure', 'balance', 'centage_charges']
         for col in amount_cols:
@@ -312,13 +281,7 @@ class DataCleaner:
         
         return df
 
-
-# ============================================================================
-# STEP 4 & 5: AUDIT CRITERIA MAPPING & RULE-BASED ANALYSIS
-# ============================================================================
-
 class AuditAnalyzer:
-    """Perform rule-based audit analysis"""
     
     def __init__(self):
         self.red_flags = []
@@ -597,336 +560,8 @@ class AuditEDA:
         return summary
 
 
-# ============================================================================
-# STEP 7: AUTOMATED REPORT GENERATION
-# ============================================================================
-
-class ReportGenerator:
-    """Generate professional Word reports"""
-    
-    @staticmethod
-    def create_audit_report(red_flags, summary, output_file='Audit_Report_PWD_Nilanga.docx'):
-        """Create comprehensive audit report"""
-        doc = Document()
-        
-        # Title
-        title = doc.add_heading('AUDIT REPORT', 0)
-        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
-        # Header Information
-        doc.add_heading('Executive Engineer, PWD Division, Nilanga', level=2)
-        doc.add_paragraph(f'District: Latur')
-        doc.add_paragraph(f'DDO Code: 3705003421')
-        doc.add_paragraph(f'Report Date: {datetime.now().strftime("%d-%B-%Y")}')
-        doc.add_paragraph('='*80)
-        doc.add_paragraph()
-        
-        # Executive Summary
-        doc.add_heading('EXECUTIVE SUMMARY', level=1)
-        doc.add_paragraph(f"Total Projects Audited: {summary['total_projects_audited']}")
-        doc.add_paragraph(f"Total Red Flags Identified: {summary['total_red_flags']}")
-        doc.add_paragraph(f"Total Amount at Risk: ₹{summary['total_amount_at_risk']:,.2f}")
-        doc.add_paragraph()
-        
-        # Severity Breakdown
-        doc.add_heading('Severity Breakdown', level=2)
-        severity_table = doc.add_table(rows=4, cols=2)
-        severity_table.style = 'Light Grid Accent 1'
-        
-        severity_table.rows[0].cells[0].text = 'Severity Level'
-        severity_table.rows[0].cells[1].text = 'Count'
-        severity_table.rows[1].cells[0].text = 'HIGH'
-        severity_table.rows[1].cells[1].text = str(summary['high_severity_count'])
-        severity_table.rows[2].cells[0].text = 'MEDIUM'
-        severity_table.rows[2].cells[1].text = str(summary['medium_severity_count'])
-        severity_table.rows[3].cells[0].text = 'LOW'
-        severity_table.rows[3].cells[1].text = str(summary['low_severity_count'])
-        doc.add_paragraph()
-        
-        # Violation Type Breakdown
-        doc.add_heading('Violation Type Analysis', level=2)
-        for vtype, data in summary['violation_breakdown'].items():
-            doc.add_paragraph(
-                f"• {vtype}: {data['count']} cases, Amount: ₹{data['amount']:,.2f}",
-                style='List Bullet'
-            )
-        doc.add_paragraph()
-        
-        # Taluka-wise Analysis
-        doc.add_heading('Taluka-wise Red Flag Distribution', level=2)
-        for taluka, count in summary['taluka_analysis'].items():
-            doc.add_paragraph(f"• {taluka}: {count} red flags", style='List Bullet')
-        doc.add_paragraph()
-        doc.add_page_break()
-        
-        # Detailed Findings
-        doc.add_heading('DETAILED AUDIT FINDINGS', level=1)
-        
-        # Group by violation type
-        violations_by_type = {}
-        for flag in red_flags:
-            vtype = flag['violation_type']
-            if vtype not in violations_by_type:
-                violations_by_type[vtype] = []
-            violations_by_type[vtype].append(flag)
-        
-        # Report each violation type
-        for vtype, flags in violations_by_type.items():
-            doc.add_heading(vtype, level=2)
-            
-            for i, flag in enumerate(flags, 1):
-                doc.add_heading(f"Finding {i}", level=3)
-                
-                p = doc.add_paragraph()
-                p.add_run('Work ID: ').bold = True
-                p.add_run(flag['work_id'])
-                
-                p = doc.add_paragraph()
-                p.add_run('Severity: ').bold = True
-                run = p.add_run(flag['severity'])
-                if flag['severity'] == 'HIGH':
-                    run.font.color.rgb = RGBColor(255, 0, 0)
-                elif flag['severity'] == 'MEDIUM':
-                    run.font.color.rgb = RGBColor(255, 165, 0)
-                
-                p = doc.add_paragraph()
-                p.add_run('Description: ').bold = True
-                p.add_run(flag['description'])
-                
-                p = doc.add_paragraph()
-                p.add_run('Amount Involved: ').bold = True
-                p.add_run(f"₹{flag['amount']:,.2f}")
-                
-                p = doc.add_paragraph()
-                p.add_run('Agency/Contractor: ').bold = True
-                p.add_run(flag['agency'])
-                
-                doc.add_paragraph()
-                doc.add_paragraph('_'*80)
-                doc.add_paragraph()
-        
-        doc.add_page_break()
-        
-        # Recommendations
-        doc.add_heading('RECOMMENDATIONS', level=1)
-        
-        recommendations = [
-            "All instances of fund diversion should be investigated and written approvals from user departments must be obtained retrospectively or funds should be returned.",
-            "Centage charges amounting to 5% of the estimated cost must be recovered immediately from all deposit works where it has not been collected.",
-            "Unspent balances exceeding ₹1,00,000 in completed works must be returned to the respective user departments within 30 days.",
-            "Survey expenditure should only be incurred after proper technical sanctions and detailed project reports are prepared.",
-            "Excess expenditure beyond 10% of Administrative Approval must be regularized by obtaining revised administrative approvals from the competent authority.",
-            "Works that are delayed beyond stipulated completion dates should be expedited, and penalty clauses in contracts should be enforced against contractors.",
-            "The practice of splitting works to avoid e-tendering procedures must be stopped immediately. All related works should be bundled together and tendered as per rules.",
-            "A monthly monitoring mechanism should be established to track project progress and financial utilization to prevent future irregularities."
-        ]
-        
-        for i, rec in enumerate(recommendations, 1):
-            doc.add_paragraph(f"{i}. {rec}", style='List Number')
-        
-        doc.add_paragraph()
-        doc.add_page_break()
-        
-        # Conclusion
-        doc.add_heading('CONCLUSION', level=1)
-        conclusion_text = f"""
-This automated audit analysis has identified {summary['total_red_flags']} red flags across 
-{summary['total_projects_audited']} projects under the jurisdiction of Executive Engineer, PWD Division, 
-Nilanga (DDO Code: 3705003421). The total amount at risk due to these irregularities is estimated at 
-₹{summary['total_amount_at_risk']:,.2f}.
-
-The most common violations identified are related to non-recovery of centage charges, fund diversions, 
-and unspent balances not being returned. There are also concerns regarding work splitting to avoid 
-e-tendering procedures and delays in project completion.
-
-Immediate corrective action is required to address these issues and strengthen internal controls. 
-The implementing division should submit an Action Taken Report (ATR) within 30 days detailing the 
-steps taken to rectify each identified irregularity.
-
-This report has been generated using automated data analysis techniques based on BEAMS MIS data, 
-Utilisation Certificates, Capital Works Reports, and Agreement Registers as per the audit parameters 
-defined by the Comptroller and Auditor General of India and the Maharashtra Public Works Manual.
-"""
-        doc.add_paragraph(conclusion_text)
-        
-        # Signature block
-        doc.add_paragraph()
-        doc.add_paragraph()
-        doc.add_paragraph('_'*40)
-        doc.add_paragraph('Audit Officer')
-        doc.add_paragraph(f'Date: {datetime.now().strftime("%d-%B-%Y")}')
-        
-        # Save document
-        doc.save(output_file)
-        print(f"\n✓ Audit report generated: {output_file}")
-        return output_file
 
 
-# ============================================================================
-# STEP 8: MAIN EXECUTION & OUTPUT
-# ============================================================================
-
-class AuditSystem:
-    """Main audit system orchestrator"""
-    
-    def __init__(self):
-        self.extractor = DataExtractor()
-        self.cleaner = DataCleaner()
-        self.analyzer = AuditAnalyzer()
-        self.report_generator = ReportGenerator()
-    
-    def run_complete_audit(self):
-        """Execute complete audit workflow"""
-        
-        print("="*80)
-        print("AUTOMATED AUDIT ANALYSIS SYSTEM")
-        print("Executive Engineer, PWD Division, Nilanga")
-        print("DDO Code: 3705003421")
-        print("="*80)
-        print()
-        
-        # STEP 1 & 2: Data Collection and Extraction
-        print("STEP 1-2: Data Collection and Extraction...")
-        uc_df = self.extractor.extract_utilisation_certificates()
-        capital_df = self.extractor.extract_capital_works()
-        tender_df = self.extractor.extract_tender_data()
-        print(f"✓ Extracted {len(uc_df)} Utilisation Certificates")
-        print(f"✓ Extracted {len(capital_df)} Capital Works")
-        print(f"✓ Extracted {len(tender_df)} Tender/Agreement records")
-        print()
-        
-        # STEP 3: Data Cleaning & Normalization
-        print("STEP 3: Data Cleaning and Normalization...")
-        uc_df = self.cleaner.clean_dataframe(uc_df)
-        capital_df = self.cleaner.clean_dataframe(capital_df)
-        print("✓ Data cleaned and normalized")
-        print()
-        
-        # STEP 4 & 5: Audit Criteria Mapping & Rule-Based Analysis
-        print("STEP 4-5: Audit Criteria Mapping and Rule-Based Analysis...")
-        print("Running audit checks:")
-        print("  • Diversion of Funds")
-        print("  • Unfruitful Expenditure on Survey Works")
-        print("  • Excess Expenditure without Approval")
-        print("  • Non-recovery of Centage Charges")
-        print("  • Unspent Balance Not Returned")
-        print("  • Splitting of Works")
-        print("  • Delay in Completion")
-        
-        red_flags = self.analyzer.analyze_all_projects(uc_df, capital_df, tender_df)
-        print(f"✓ Analysis complete. {len(red_flags)} red flags identified")
-        print()
-        
-        # STEP 6: Result Aggregation & EDA
-        print("STEP 6: Result Aggregation and Exploratory Data Analysis...")
-        summary = AuditEDA.generate_summary(red_flags, uc_df, capital_df)
-        print(f"✓ Summary statistics generated")
-        print()
-        
-        # Display Summary
-        print("="*80)
-        print("AUDIT SUMMARY")
-        print("="*80)
-        print(f"Total Projects Audited: {summary['total_projects_audited']}")
-        print(f"Total Red Flags: {summary['total_red_flags']}")
-        print(f"Total Amount at Risk: ₹{summary['total_amount_at_risk']:,.2f}")
-        print()
-        print("Severity Breakdown:")
-        print(f"  HIGH: {summary['high_severity_count']}")
-        print(f"  MEDIUM: {summary['medium_severity_count']}")
-        print(f"  LOW: {summary['low_severity_count']}")
-        print()
-        print("Violation Type Breakdown:")
-        for vtype, data in summary['violation_breakdown'].items():
-            print(f"  {vtype}: {data['count']} cases (₹{data['amount']:,.2f})")
-        print()
-        print("Taluka-wise Distribution:")
-        for taluka, count in summary['taluka_analysis'].items():
-            print(f"  {taluka}: {count} red flags")
-        print()
-        
-        # STEP 7: Automated Report Generation
-        print("STEP 7: Automated Report Generation...")
-        report_file = self.report_generator.create_audit_report(red_flags, summary)
-        print()
-        
-        # STEP 8: Final Output
-        print("="*80)
-        print("AUDIT PROCESS COMPLETED SUCCESSFULLY")
-        print("="*80)
-        print()
-        print("DELIVERABLES:")
-        print(f"1. Clean Dataset: {len(uc_df) + len(capital_df)} projects analyzed")
-        print(f"2. Flag Summary: {len(red_flags)} irregularities identified")
-        print(f"3. Word Report: {report_file}")
-        print()
-        print("NEXT STEPS:")
-        print("1. Review the generated Word report")
-        print("2. Prioritize HIGH severity findings")
-        print("3. Submit Action Taken Report (ATR) within 30 days")
-        print("4. Implement recommendations to strengthen controls")
-        print()
-        
-        # Save detailed flag data to CSV
-        print("Saving detailed analysis to CSV...")
-        flags_df = pd.DataFrame(red_flags)
-        csv_file = 'Audit_Red_Flags_Detail.csv'
-        flags_df.to_csv(csv_file, index=False)
-        print(f"✓ Detailed red flags saved: {csv_file}")
-        print()
-        
-        # Save summary to Excel
-        print("Creating Excel summary...")
-        excel_file = 'Audit_Summary_Analysis.xlsx'
-        with pd.ExcelWriter(excel_file, engine='openpyxl') as writer:
-            uc_df.to_excel(writer, sheet_name='Utilisation_Certificates', index=False)
-            capital_df.to_excel(writer, sheet_name='Capital_Works', index=False)
-            tender_df.to_excel(writer, sheet_name='Tender_Register', index=False)
-            flags_df.to_excel(writer, sheet_name='Red_Flags', index=False)
-            
-            # Summary sheet
-            summary_data = {
-                'Metric': ['Total Projects', 'Total Red Flags', 'Amount at Risk', 
-                          'HIGH Severity', 'MEDIUM Severity', 'LOW Severity'],
-                'Value': [summary['total_projects_audited'], summary['total_red_flags'],
-                         f"₹{summary['total_amount_at_risk']:,.2f}",
-                         summary['high_severity_count'], summary['medium_severity_count'],
-                         summary['low_severity_count']]
-            }
-            pd.DataFrame(summary_data).to_excel(writer, sheet_name='Summary', index=False)
-        
-        print(f"✓ Excel summary created: {excel_file}")
-        print()
-        
-        print("="*80)
-        print("ALL OUTPUTS GENERATED SUCCESSFULLY!")
-        print("="*80)
-        
-        return {
-            'red_flags': red_flags,
-            'summary': summary,
-            'report_file': report_file,
-            'csv_file': csv_file,
-            'excel_file': excel_file
-        }
-
-
-# ============================================================================
-# EXECUTION
-# ============================================================================
-
-if __name__ == "__main__":
-    # Initialize and run the audit system
-    audit_system = AuditSystem()
-    results = audit_system.run_complete_audit()
-    
-    print("\n" + "="*80)
-    print("AUDIT ANALYSIS COMPLETED")
-    print("="*80)
-    print(f"\nGenerated Files:")
-    print(f"1. {results['report_file']} - Comprehensive Word Report")
-    print(f"2. {results['csv_file']} - Detailed Red Flags CSV")
-    print(f"3. {results['excel_file']} - Complete Analysis Workbook")
     print("\nTotal Red Flags Identified:", len(results['red_flags']))
     print("Amount at Risk: ₹{:,.2f}".format(results['summary']['total_amount_at_risk']))
     print("\n" + "="*80)
